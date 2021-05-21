@@ -31,6 +31,7 @@ const checkIquidusBlockHeight = (block, channel) => {
         res.on('end', () => {
             response = parseInt(response);
             console.log("Iquidus response for latest block is " + response)
+            console.log("Insight response for latest block is " + block.height)
             if ((response + 10) < block.height) {
                 channel.send(alphaTeamMention + " iquidus explorer is out of sync...")
             }
@@ -123,7 +124,7 @@ const checkBlocks = (channel) => {
     const insightBlockListOptions = {
         hostname: insightConfig.url,
         port: insightConfig.port,
-        path: '/insight-api-bzedge-v2/blocks?limit=20',
+        path: '/insight-api-bzedge-v2/blocks?limit=' + config.averageBlockTimeRange,
         method: 'GET'
     }
 
