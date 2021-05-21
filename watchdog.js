@@ -6,6 +6,15 @@ const alphaTeamMention = config.alphaTeamDiscordId
 const iquidusConfig = config.iquidus
 const insightConfig = config.insight
 
+//are in fact the loops of this script
+let performedChecks = 0;
+
+//keeps track of latest block with issues.
+//blocks with issues are those that are mined after a long period
+//a period longer than config.allowedMinutesBetweenBlocks
+//when 0 it means there's no block with issues
+let blockOlderThanAllowed = 0;
+
 const minutesInMiliseconds = (minutes) => {
     return minutes * 60 * 1000
 }
@@ -101,15 +110,28 @@ const handleInsightBlocksResponse = (blocksResponse, channel) => {
         let message = " No block was found in last " + config.allowedMinutesBetweenBlocks + " minutes according to insight explorer"
         console.log(message)
         channel.send(alphaTeamMention + message)
+        blockOlderThanAllowed = lastBlock.height
+    } else if ((blockOlderThanAllowed > 0) && (blockOlderThanAllowed < lastBlock.height)) {
+        //if  we have a record of an older block that had an issue we will send a message with how many minutes passed
+        blockOlderThanAllowed = 0;
+
+        //compute time diff in minutes between current block and previous block
+        let timeDiffInMinutes = (lastBlock.time - blocksResponse.blocks[1].time)/60;
+        
+        let message = "New block mined after " + timeDiffInMinutes + " minutes. New height: " + lastBlock.height
+        console.log(message)
+        channel.send(alphaTeamMention + message)
     }
 
     //compute average between first and last block fetched
     let firstBlock = blocksResponse.blocks[numOfBlocksFetched - 1];
     let averageBlockTime = (lastBlock.time - firstBlock.time) / numOfBlocksFetched;
-    let message = " Average block time for last " + numOfBlocksFetched + " blocks is " + averageBlockTime + " seconds."
-    console.log(message)
-    channel.send(message)
-    
+    if (averageBlockTime <= config.minBlockAverageInSeconds  || averageBlockTime >= config.maxBlockAverageInSeconds) {
+        let message = " Average block time for last " + numOfBlocksFetched + " blocks is " + averageBlockTime + " seconds."
+        console.log(message)
+        channel.send(alphaTeamMention + message)
+    }
+
     //repeat the process once every N minutes
     setTimeout(
         () => {
@@ -120,7 +142,7 @@ const handleInsightBlocksResponse = (blocksResponse, channel) => {
 }
 
 const checkBlocks = (channel) => {
-    
+
     const insightBlockListOptions = {
         hostname: insightConfig.url,
         port: insightConfig.port,
@@ -137,7 +159,17 @@ const checkBlocks = (channel) => {
         })
         
         res.on('end', () => {
-            handleInsightBlocksResponse(JSON.parse(response), channel);
+            response = JSON.parse(response)
+            handleInsightBlocksResponse(response, channel);
+            
+            //heartbeat
+            performedChecks++;
+            if (performedChecks % config.heartbeatInterval === 0) {
+                let message = "I'm well and alive. It's block height " + response.blocks[0].height
+                message += ". Halving at 1800000!"
+                console.log(message)
+                channel.send(message)
+            }
         })
       })
     

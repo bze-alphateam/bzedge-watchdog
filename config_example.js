@@ -5,7 +5,10 @@ module.exports = {
     watchdogDiscordChannelId: 'DISCORD CHANNEL ID WHERE THE WATCHDOG WILL SEND MESSAGES',
     allowedMinutesBetweenBlocks: 15, //minutes allowed between blocks. The watchdog will send a message and tag alpha team if the interval between two blocks is higher
     checkIntervalInMinutes: 2, //the watchdog runs in a loop and it will check all the systems in this interval
-    averageBlockTimeRange: 20, // numbers of blocks to be fetched from current block to older blocks. this is used to compute the avg block time
+    averageBlockTimeRange: 60, // numbers of blocks to be fetched from current block to older blocks. this is used to compute the avg block time
+    minBlockAverageInSeconds: 30,
+    maxBlockAverageInSeconds: 120,
+    heartbeatInterval:  200,
     iquidus: {
         url: "blocks.getbze.com",
         port: 443,
