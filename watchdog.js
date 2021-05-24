@@ -15,6 +15,8 @@ let performedChecks = 0;
 //when 0 it means there's no block with issues
 let blockOlderThanAllowed = 0;
 
+let emptyInsightBlocksListOccurences = 0;
+
 const minutesInMiliseconds = (minutes) => {
     return minutes * 60 * 1000
 }
@@ -94,12 +96,27 @@ const handleInsightBlocksResponse = (blocksResponse, channel) => {
     
     let numOfBlocksFetched = blocksResponse.blocks.length 
     //make sure the response contains blocks
-    if (numOfBlocksFetched === 0) {
-        let message = " I'm not receiving blocks on insight response. The blocks list is empty"
-        console.log(message)
-        channel.send(alphaTeamMention + message)
-        return
+    if (numOfBlocksFetched < 2) {
+        emptyInsightBlocksListOccurences++
+
+        console.log('Empty blocks list occurence: ' + emptyInsightBlocksListOccurences)
+
+        if (emptyInsightBlocksListOccurences > config.notifyAfterEmptyBlocksList) {
+            let message = " I'm not receiving blocks on insight response. The blocks list is empty or too short."
+            console.log(message)
+            channel.send(alphaTeamMention + message)
+        }
+
+        setTimeout(
+            () => {
+                checkBlocks(channel)
+            },
+            minutesInMiliseconds(config.checkIntervalInMinutes)
+        )
+        return;
     }
+
+    emptyInsightBlocksListOccurences = 0;
 
     //pick latest block from list
     let lastBlock = blocksResponse.blocks[0]

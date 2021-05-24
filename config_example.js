@@ -9,6 +9,7 @@ module.exports = {
     minBlockAverageInSeconds: 30,
     maxBlockAverageInSeconds: 120,
     heartbeatInterval:  200,
+    notifyAfterEmptyBlocksList: 3,
     iquidus: {
         url: "blocks.getbze.com",
         port: 443,
