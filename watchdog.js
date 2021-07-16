@@ -63,7 +63,7 @@ const checkForNegativeConfirmations = (block, channel) => {
     const insightBlockOptions = {
         hostname: insightConfig.url,
         port: insightConfig.port,
-        path: '/insight-api-bzedge-v2/block/' + block.hash,
+        path: '/insight-api-bzedge-v2/txs?pageNum=0&block=' + block.hash,
         method: 'GET'
       }
 
@@ -77,7 +77,7 @@ const checkForNegativeConfirmations = (block, channel) => {
         
         res.on('end', () => {
             response = JSON.parse(response)
-            if (response.confirmations < 0) {
+            if (response.txs[0].confirmations < 0) {
                 channel.send(alphaTeamMention + " insight explorer has negative confirmations.")
             }
             checkIquidusBlockHeight(response, channel)
