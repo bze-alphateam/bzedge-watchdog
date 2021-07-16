@@ -80,7 +80,7 @@ const checkForNegativeConfirmations = (block, channel) => {
             if (response.txs[0].confirmations < 0) {
                 channel.send(alphaTeamMention + " insight explorer has negative confirmations.")
             }
-            checkIquidusBlockHeight(response, channel)
+            checkIquidusBlockHeight(block, channel)
         })
       })
     
